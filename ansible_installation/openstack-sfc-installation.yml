@@ -1,0 +1,5 @@
+---
+- hosts: openstack-controller
+  roles:
+    - openstack-sfc-installation
+

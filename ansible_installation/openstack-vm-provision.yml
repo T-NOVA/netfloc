@@ -1,0 +1,4 @@
+---
+- hosts: openstack-controller
+  roles:
+    - openstack-vm-provision

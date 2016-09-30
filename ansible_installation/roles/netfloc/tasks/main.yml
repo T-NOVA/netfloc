@@ -1,0 +1,43 @@
+---
+- name: Update APT and Install unzip
+  apt: pkg={{item}} update_cache=yes
+  with_items:
+#  - git
+  - unzip
+  become: yes
+  become_method: sudo
+  tags: dependencies_setup
+
+- name: Set JAVA_HOME environment variable
+  lineinfile:
+    dest: /etc/environment
+    regexp: 'JAVA_HOME'
+    line: 'JAVA_HOME="/usr/lib/jvm/java-7-openjdk-amd64"'
+  become: yes
+  become_method: sudo
+
+#- name: Download Netfloc git repository
+#  git:
+#    repo: "https://github.com/icclab/netfloc.git"
+#    dest: "~/netfloc"
+#    clone: yes
+#    update: no
+#
+#- name: Fix sources command
+#  shell: "curl https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml --create-dirs -o ~/.m2/settings.xml"
+#
+#- name: Maven install Netfloc
+#  shell: "mvn clean install"
+#  args:
+#    chdir: "~/netfloc"
+
+
+- name: Copy and unzip netfloc-compiled.zip file to Openstack Server
+  unarchive:
+    src: "../files/netfloc-compiled.zip"
+    dest: "~/"
+
+- name: Start Netfloc
+  shell: "nohup ./start &"
+  args:
+    chdir: "~/netfloc-compiled/karaf/target/assembly/bin/"

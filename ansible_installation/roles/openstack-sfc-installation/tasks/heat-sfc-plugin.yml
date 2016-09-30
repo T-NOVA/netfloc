@@ -1,0 +1,46 @@
+---
+# ********************************* FIRST STEP ************************************
+- name: Create folder to host plugin file
+  file:
+    path: /usr/lib/heat
+    state: directory
+    mode: 0755
+  become: yes
+  become_method: sudo
+
+- name: Copy netfloc.py file to Openstack Server
+  copy:
+    src: ../files/netfloc.py
+    dest: /usr/lib/heat/netfloc.py
+    owner: root
+    group: root
+#    mode: 0644
+  become: yes
+  become_method: sudo
+
+- name: Add heat plugin line in /etc/heat/heat.conf
+  lineinfile:
+    state: present
+    dest: "/etc/heat/heat.conf"
+    regexp: "plugin_dirs="
+    insertafter: "^\\[DEFAULT\\].*$"
+    line: "plugin_dirs=/var/lib/heat/heat/contrib/nova_flavor/nova_flavor,/var/lib/heat/heat/contrib/netfloc/resources"
+  become: yes
+  become_method: sudo
+
+
+- name: Modify Openstack python file port.py
+  lineinfile:
+    state: present
+    dest: "/usr/lib/python2.7/dist-packages/heat/engine/resources/openstack/neutron/port.py"
+    insertafter: "self\\.resource_id_set\\(port\\['id'\\]\\)"
+    line: "        return port['id']"
+  become: yes
+  become_method: sudo
+
+- name: Restart Openstack HEAT Engine
+  service:
+    name: heat-engine
+    state: restarted
+  become: yes
+  become_method: sudo

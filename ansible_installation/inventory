@@ -1,0 +1,5 @@
+[openstack-controller]
+10.143.0.240 ansible_user=localadmin ansible_python_interpreter="/home/localadmin/ansible_venv/bin/python"
+
+[vm_group]
+

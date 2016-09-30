@@ -1,0 +1,5 @@
+---
+# Username for openstack virtual machines
+GLOB_OS_SSH_USERNAME: ubuntu
+# Directory where python virtual environment containing ansible resides in openstack server
+GLOB_OS_PYTHON_VENV: /home/localadmin/ansible_venv/bin/

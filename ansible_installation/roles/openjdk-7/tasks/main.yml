@@ -1,0 +1,16 @@
+---
+- name: Update APT and Install openjdk7
+  apt: pkg={{item}} update_cache=yes
+  with_items:
+  - openjdk-7-jdk
+  become: yes
+  become_method: sudo
+  tags: dependencies_setup
+
+- name: Set JAVA_HOME environment variable
+  lineinfile:
+    dest: /etc/environment
+    regexp: 'JAVA_HOME'
+    line: 'JAVA_HOME="/usr/lib/jvm/java-7-openjdk-amd64"'
+  become: yes
+  become_method: sudo

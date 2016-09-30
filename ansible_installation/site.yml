@@ -1,0 +1,5 @@
+---
+- include: openstack-vm-provision.yml
+- include: openjdk-7.yml
+- include: netfloc.yml
+- include: openstack-sfc-installation.yml

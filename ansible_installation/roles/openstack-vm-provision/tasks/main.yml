@@ -1,0 +1,87 @@
+---
+# ********************************* FIRST STEP ************************************
+- name: Launch an instance
+  os_server:
+    state: present
+    auth: "{{ OS_AUTH }}"
+    name: "{{INSTNAME}}"
+    image: "{{OSIMG}}"
+    key_name: "{{KEY_NAME}}"
+    timeout: 200
+    flavor: "{{FLAVOR}}"
+    auto_ip: no
+    nics:
+      - net-name: "{{INTERNAL_NETWORK}}"
+    wait: yes
+  tags: launch_instance
+
+
+- name: Check for floating ip existance in server
+  shell: ./openstack --os-username={{ OS_USERNAME }} --os-password={{ OS_PASSWORD }} --os-tenant-name={{ OS_TENANT_NAME }} --os-auth-url={{ OS_AUTH_URL }}
+         server show -f json {{INSTNAME}} |
+         python -mjson.tool |
+         grep addresses |
+         awk -F', ' '{for(i=1;i<=NF;i++) if(!($i ~ /=/)) printf("%s\n",$i)}' |
+         awk -F'",' '{print $1}'
+  args:
+    chdir: "{{ GLOB_OS_PYTHON_VENV }}"
+  register: ip_output
+  tags:
+    - assign_floating_ip
+    - temp_hostname
+
+- name: Save floating ip in a variable
+  set_fact:
+    floating_ip: "{{ ip_output.stdout }}"
+  when: ip_output.stdout|default("") != ""
+  tags:
+    - assign_floating_ip
+    - temp_hostname
+
+- name: Create Floating ip
+  shell: ./openstack --os-username={{ OS_USERNAME }} --os-password={{ OS_PASSWORD }} --os-tenant-name={{ OS_TENANT_NAME }} --os-auth-url={{ OS_AUTH_URL }}
+         ip floating create  {{ EXTERNAL_NETWORK }} --format json
+  args:
+    chdir: "{{ GLOB_OS_PYTHON_VENV }}"
+  register: create_floating_ip_result
+  when: ip_output.stdout|default("") == ""
+  tags:
+    - assign_floating_ip
+    - temp_hostname
+
+- name: Save created floating ip in a variable
+  set_fact:
+#      floating_ip: "{{ (create_floating_ip_result.stdout|from_json)[3].Value }}"
+    floating_ip: "{{ (create_floating_ip_result.stdout|from_json).ip }}"
+  when: ip_output.stdout|default("") == ""
+  tags:
+    - assign_floating_ip
+
+- name: Assign Floating ip
+  os_floating_ip:
+    auth: "{{ OS_AUTH }}"
+    state: present
+    server: "{{ INSTNAME }}"
+    floating_ip_address: "{{ floating_ip }}"
+  when: ip_output.stdout|default("") == ""
+  tags:
+    - assign_floating_ip
+
+- name: Wait until SSH is available
+  local_action:
+    module: wait_for
+    host: "{{ floating_ip }}"
+    port: 22
+    delay: 20
+    timeout: 320
+    state: started
+  tags:
+    - assign_floating_ip
+
+- name: Add temp host
+  add_host:
+    name: "{{ floating_ip }}"
+    groups: vm_group # "{{ GLOB_OS_VM_GROUP }}" this doesn't work !!
+    ansible_ssh_user: "{{ GLOB_OS_SSH_USERNAME }}"
+  tags:
+    - temp_hostname

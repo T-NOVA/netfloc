@@ -1,0 +1,4 @@
+---
+- hosts: vm_group
+  roles:
+    - openjdk-7

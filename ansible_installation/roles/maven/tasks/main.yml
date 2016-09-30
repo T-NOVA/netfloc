@@ -1,0 +1,33 @@
+---
+
+- name: Check if Maven tar.gz is already downloaded
+  stat: path=/tmp/apache-maven-3.1.1-bin.tar.gz
+  register: maven_tar
+
+
+- name: Download Maven
+  get_url:
+    url: "http://apache.cc.uoc.gr/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz"
+    dest: "/tmp/apache-maven-3.1.1-bin.tar.gz"
+  when: maven_tar.stat.exists == False
+
+
+- name: Untar Maven tar.gz
+  unarchive:
+    copy: no
+    src: "/tmp/apache-maven-3.1.1-bin.tar.gz"
+    dest: "/opt"
+    creates: "/opt/apache-maven-3.1.1"
+  become: yes
+  become_method: sudo
+
+- name: Set mvn directory to PATH environment variable
+  lineinfile:
+    dest: /home/{{ ansible_ssh_user }}/.bashrc
+    line: 'export PATH=$PATH:/opt/apache-maven-3.1.1/bin'
+
+#- name: Maven link
+#  file:
+#    src: /opt/apache-maven-3.3.9/bin/mvn
+#    dest: /bin/sh/mvn
+#    state: link

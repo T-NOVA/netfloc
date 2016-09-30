@@ -1,0 +1,28 @@
+# Openstack Identity URL
+OS_AUTH_URL: http://10.143.0.240:5000/v2.0
+# Openstack Username & Password
+OS_USERNAME: admin
+OS_PASSWORD: enter_password_here
+# Openstack Tenant name
+OS_TENANT_NAME: admin
+
+OS_AUTH:
+  auth_url: "{{ OS_AUTH_URL }}"
+  username: "{{ OS_USERNAME }}"
+  password: "{{ OS_PASSWORD }}"
+  project_name: "{{ OS_TENANT_NAME }}"
+
+# Openstack key pair name
+KEY_NAME: os_key
+# Openstack Internal network name for VM
+INTERNAL_NETWORK: int-net
+# Openstack Enternal network name for VM
+EXTERNAL_NETWORK: ext-net
+# Openstack Flavor name for VM
+FLAVOR: m1.medium
+# Openstack Image or Snapshot name for VM
+OSIMG: trusty64cloud
+# Number of instances to provision
+INSTCNT: 1
+# Name of instance to provision
+INSTNAME: ansible-provision-tnova_sfc
